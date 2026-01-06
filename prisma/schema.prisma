@@ -13,50 +13,34 @@ datasource db {
   provider = "postgresql"
 }
 
-
-
 model User {
-  id String @id @default(cuid())
-  name String?
-  email String @unique
+  id        String   @id  @default(dbgenerated("gen_random_uuid()"))
+  name      String?
+  email     String   @unique
   createdAt DateTime @default(now())
 
-  isSOLAdmin Boolean @default(false)
-  memberships Membership[]
+  isSOLAdmin  Boolean      @default(false)
+  access Access[]
 }
-
 
 model Project {
-  id String @id @default(cuid())
-  name String 
-  accountId String
-  
-  createdAt DateTime @default(now())
+  id        String @id @default(dbgenerated("gen_random_uuid()"))
+  name      String
 
-  account Account @relation(fields: [accountId], references: [id])
+  createdAt DateTime @default(now())
+  access Access[]
 }
 
 
-model Account {
-  id String @id @default(cuid())
-  name String
-
+model Access {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   createdAt DateTime @default(now())
 
-  memberships Membership[]
-  projects Project[]
-}
+  userId    String
+  projectId String
 
+  user    User    @relation(fields: [userId], references: [id])
+  projects Project @relation(fields: [projectId], references: [id])
 
-model Membership {
-  id String @id @default(cuid())
-  createdAt DateTime @default(now())
-
-  userId String
-  accountId String
-
-  user User @relation(fields: [userId], references: [id])
-  account Account @relation(fields: [accountId], references: [id])
-
-  @@unique([userId, accountId])
+  @@unique([userId, projectId])
 }
